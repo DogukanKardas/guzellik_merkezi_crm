@@ -1,36 +1,71 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# Güzellik Merkezi — Müşteri Takip Sistemi
 
-## Getting Started
+Demo amaçlı güzellik merkezi CRM paneli. Next.js + Supabase + Vercel.
 
-First, run the development server:
+## Özellikler
+
+- Gömülü giriş (admin / demo123)
+- Dashboard: randevu, ödeme, mesaj özeti
+- Müşteri yönetimi (CRUD, arama, detay)
+- Randevu takibi (liste, durum güncelleme, yeni randevu)
+- Ödeme takibi (tahsilat özeti, durum güncelleme)
+- Hizmet kataloğu
+- Simüle Instagram / WhatsApp mesaj kutusu
+
+## Kurulum
+
+### 1. Bağımlılıklar
+
+```bash
+npm install
+```
+
+### 2. Supabase
+
+1. [Supabase](https://supabase.com) projesi oluşturun
+2. SQL Editor'de sırayla çalıştırın:
+   - `supabase/migrations/20260314100000_initial_schema.sql`
+   - `supabase/migrations/20260314100001_seed_data.sql`
+
+### 3. Ortam değişkenleri
+
+`.env.local` dosyası oluşturun (`.env.local.example` referans alın):
+
+```env
+NEXT_PUBLIC_SUPABASE_URL=https://xxx.supabase.co
+NEXT_PUBLIC_SUPABASE_ANON_KEY=eyJ...
+SUPABASE_SERVICE_ROLE_KEY=eyJ...
+DEMO_USERNAME=admin
+DEMO_PASSWORD=demo123
+SESSION_SECRET=random-secret-string
+```
+
+### 4. Geliştirme
 
 ```bash
 npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
 ```
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+Tarayıcıda: http://localhost:3000/login
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+## Vercel Deploy
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+1. Repoyu GitHub'a push edin
+2. Vercel'de yeni proje oluşturun
+3. Environment Variables ekleyin (yukarıdaki tüm değişkenler)
+4. Deploy
 
-## Learn More
+## Demo Giriş
 
-To learn more about Next.js, take a look at the following resources:
+| Alan | Değer |
+|------|-------|
+| Kullanıcı | admin |
+| Şifre | demo123 |
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
+## Teknolojiler
 
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
-
-## Deploy on Vercel
-
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
-
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+- Next.js 15 (App Router)
+- TypeScript
+- Tailwind CSS + shadcn/ui
+- Supabase (PostgreSQL)
+- Vercel
