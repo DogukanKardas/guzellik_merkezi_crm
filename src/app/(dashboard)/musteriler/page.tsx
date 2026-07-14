@@ -15,41 +15,51 @@ import {
 } from "@/components/ui/table";
 import { Button } from "@/components/ui/button";
 import { formatDate } from "@/lib/format";
+import { getLocale } from "@/lib/i18n/get-locale";
+import { getTranslation } from "@/lib/i18n/translations";
+import { panelClass } from "@/lib/ui-classes";
 
-async function CustomerList({ search }: { search?: string }) {
+async function CustomerList({
+  search,
+  locale,
+}: {
+  search?: string;
+  locale: Awaited<ReturnType<typeof getLocale>>;
+}) {
   const customers = await getCustomers(search);
+  const t = getTranslation(locale);
 
   return (
-    <div className="rounded-xl border border-rose-100 bg-white">
+    <div className={panelClass}>
       <Table>
         <TableHeader>
           <TableRow>
-            <TableHead>Ad Soyad</TableHead>
-            <TableHead>Telefon</TableHead>
-            <TableHead>E-posta</TableHead>
-            <TableHead>Instagram</TableHead>
-            <TableHead>Kayıt Tarihi</TableHead>
-            <TableHead className="text-right">İşlem</TableHead>
+            <TableHead>{t.customers.fullName}</TableHead>
+            <TableHead>{t.customers.phone}</TableHead>
+            <TableHead>{t.customers.email}</TableHead>
+            <TableHead>{t.customers.instagram}</TableHead>
+            <TableHead>{t.customers.registeredAt}</TableHead>
+            <TableHead className="text-right">{t.customers.action}</TableHead>
           </TableRow>
         </TableHeader>
         <TableBody>
           {customers.length === 0 ? (
             <TableRow>
               <TableCell colSpan={6} className="text-center text-muted-foreground">
-                Müşteri bulunamadı.
+                {t.customers.notFound}
               </TableCell>
             </TableRow>
           ) : (
             customers.map((c) => (
               <TableRow key={c.id}>
                 <TableCell className="font-medium">{c.full_name}</TableCell>
-                <TableCell>{c.phone ?? "—"}</TableCell>
-                <TableCell>{c.email ?? "—"}</TableCell>
-                <TableCell>{c.instagram_handle ?? "—"}</TableCell>
-                <TableCell>{formatDate(c.created_at)}</TableCell>
+                <TableCell>{c.phone ?? t.common.empty}</TableCell>
+                <TableCell>{c.email ?? t.common.empty}</TableCell>
+                <TableCell>{c.instagram_handle ?? t.common.empty}</TableCell>
+                <TableCell>{formatDate(c.created_at, locale)}</TableCell>
                 <TableCell className="text-right">
                   <Button variant="ghost" size="sm" asChild>
-                    <Link href={`/musteriler/${c.id}`}>Detay</Link>
+                    <Link href={`/musteriler/${c.id}`}>{t.common.detail}</Link>
                   </Button>
                 </TableCell>
               </TableRow>
@@ -67,6 +77,8 @@ export default async function CustomersPage({
   searchParams: Promise<{ q?: string }>;
 }) {
   const { q } = await searchParams;
+  const locale = await getLocale();
+  const t = getTranslation(locale);
 
   return (
     <>
@@ -78,19 +90,19 @@ export default async function CustomersPage({
             <Input
               name="q"
               defaultValue={q}
-              placeholder="İsim, telefon veya e-posta ara..."
+              placeholder={t.customers.searchPlaceholder}
               className="pl-9"
             />
           </form>
           <CustomerFormDialog>
             <Button className="bg-gradient-to-r from-rose-500 to-purple-500 hover:from-rose-600 hover:to-purple-600">
               <Plus className="mr-2 h-4 w-4" />
-              Yeni Müşteri
+              {t.customers.newCustomer}
             </Button>
           </CustomerFormDialog>
         </div>
         <Suspense fallback={<div className="h-64 animate-pulse rounded-xl bg-muted" />}>
-          <CustomerList search={q} />
+          <CustomerList search={q} locale={locale} />
         </Suspense>
       </main>
     </>

@@ -7,7 +7,9 @@ import {
   useEffect,
   useState,
 } from "react";
+import { useRouter } from "next/navigation";
 import { getTranslation, type Locale } from "./translations";
+import { LOCALE_COOKIE } from "./constants";
 
 const LOCALE_KEY = "crm-locale";
 
@@ -19,28 +21,33 @@ interface SettingsContextValue {
 
 const SettingsContext = createContext<SettingsContextValue | null>(null);
 
+function persistLocale(locale: Locale) {
+  localStorage.setItem(LOCALE_KEY, locale);
+  document.cookie = `${LOCALE_COOKIE}=${locale};path=/;max-age=31536000;SameSite=Lax`;
+  document.documentElement.lang = locale;
+}
+
 export function SettingsProvider({ children }: { children: React.ReactNode }) {
+  const router = useRouter();
   const [locale, setLocaleState] = useState<Locale>("tr");
   const [mounted, setMounted] = useState(false);
 
   useEffect(() => {
     const stored = localStorage.getItem(LOCALE_KEY) as Locale | null;
-    if (stored === "tr" || stored === "en") {
-      setLocaleState(stored);
-    }
+    const initial = stored === "en" || stored === "tr" ? stored : "tr";
+    setLocaleState(initial);
+    persistLocale(initial);
     setMounted(true);
   }, []);
 
-  useEffect(() => {
-    if (mounted) {
-      document.documentElement.lang = locale;
-    }
-  }, [locale, mounted]);
-
-  const setLocale = useCallback((next: Locale) => {
-    setLocaleState(next);
-    localStorage.setItem(LOCALE_KEY, next);
-  }, []);
+  const setLocale = useCallback(
+    (next: Locale) => {
+      setLocaleState(next);
+      persistLocale(next);
+      router.refresh();
+    },
+    [router]
+  );
 
   const t = getTranslation(locale);
 

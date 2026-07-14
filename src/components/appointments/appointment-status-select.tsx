@@ -3,6 +3,7 @@
 import { useRouter } from "next/navigation";
 import { updateAppointmentStatus } from "@/lib/actions";
 import type { AppointmentStatus } from "@/lib/types";
+import { useSettings } from "@/lib/i18n/settings-context";
 import {
   Select,
   SelectContent,
@@ -10,7 +11,6 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import { APPOINTMENT_STATUS_LABELS } from "@/lib/types";
 
 export function AppointmentStatusSelect({
   id,
@@ -20,6 +20,7 @@ export function AppointmentStatusSelect({
   status: AppointmentStatus;
 }) {
   const router = useRouter();
+  const { t } = useSettings();
 
   async function handleChange(value: string) {
     await updateAppointmentStatus(id, value as AppointmentStatus);
@@ -32,7 +33,9 @@ export function AppointmentStatusSelect({
         <SelectValue />
       </SelectTrigger>
       <SelectContent>
-        {Object.entries(APPOINTMENT_STATUS_LABELS).map(([value, label]) => (
+        {(
+          Object.entries(t.status.appointment) as [AppointmentStatus, string][]
+        ).map(([value, label]) => (
           <SelectItem key={value} value={value}>
             {label}
           </SelectItem>

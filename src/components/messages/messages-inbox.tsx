@@ -10,6 +10,7 @@ import {
   markThreadRead,
 } from "@/lib/actions";
 import type { Message, MessageChannel, MessageThread } from "@/lib/types";
+import { useSettings } from "@/lib/i18n/settings-context";
 import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
@@ -17,10 +18,12 @@ import { Input } from "@/components/ui/input";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { cn } from "@/lib/utils";
 import { formatRelative, formatTime } from "@/lib/format";
+import { panelClass } from "@/lib/ui-classes";
 
 export function MessagesInbox() {
   const router = useRouter();
   const searchParams = useSearchParams();
+  const { locale, t } = useSettings();
   const [channel, setChannel] = useState<MessageChannel | "all">("all");
   const [threads, setThreads] = useState<MessageThread[]>([]);
   const [messages, setMessages] = useState<Message[]>([]);
@@ -66,20 +69,24 @@ export function MessagesInbox() {
     router.refresh();
   }
 
-  const activeThread = threads.find((t) => t.id === selectedThread);
+  const activeThread = threads.find((th) => th.id === selectedThread);
 
   return (
-    <div className="flex h-[calc(100vh-8rem)] overflow-hidden rounded-xl border border-rose-100 bg-white">
-      {/* Thread list */}
-      <div className="flex w-full flex-col border-r border-rose-100 sm:w-80 lg:w-96">
-        <div className="border-b border-rose-100 p-3">
+    <div
+      className={cn(
+        panelClass,
+        "flex h-[calc(100vh-8rem)] overflow-hidden"
+      )}
+    >
+      <div className="flex w-full flex-col border-r border-border sm:w-80 lg:w-96">
+        <div className="border-b border-border p-3">
           <Tabs
             value={channel}
             onValueChange={(v) => setChannel(v as MessageChannel | "all")}
           >
             <TabsList className="w-full">
               <TabsTrigger value="all" className="flex-1">
-                Tümü
+                {t.messages.all}
               </TabsTrigger>
               <TabsTrigger value="instagram" className="flex-1 gap-1">
                 <AtSign className="h-3 w-3" />
@@ -95,7 +102,7 @@ export function MessagesInbox() {
         <ScrollArea className="flex-1">
           {threads.length === 0 ? (
             <p className="p-4 text-center text-sm text-muted-foreground">
-              Konuşma bulunamadı.
+              {t.messages.noThreads}
             </p>
           ) : (
             threads.map((thread) => (
@@ -103,8 +110,8 @@ export function MessagesInbox() {
                 key={thread.id}
                 onClick={() => setSelectedThread(thread.id)}
                 className={cn(
-                  "flex w-full items-start gap-3 border-b border-rose-50 p-4 text-left transition-colors hover:bg-rose-50/50",
-                  selectedThread === thread.id && "bg-rose-50"
+                  "flex w-full items-start gap-3 border-b border-border p-4 text-left transition-colors hover:bg-muted/50",
+                  selectedThread === thread.id && "bg-muted"
                 )}
               >
                 <div
@@ -123,11 +130,11 @@ export function MessagesInbox() {
                 </div>
                 <div className="min-w-0 flex-1">
                   <div className="flex items-center justify-between gap-2">
-                    <p className="truncate text-sm font-medium">
+                    <p className="truncate text-sm font-medium text-foreground">
                       {thread.contact_name}
                     </p>
                     <span className="shrink-0 text-xs text-muted-foreground">
-                      {formatRelative(thread.last_message_at)}
+                      {formatRelative(thread.last_message_at, locale)}
                     </span>
                   </div>
                   <p className="truncate text-xs text-muted-foreground">
@@ -145,18 +152,17 @@ export function MessagesInbox() {
         </ScrollArea>
       </div>
 
-      {/* Chat panel */}
       <div className="hidden flex-1 flex-col sm:flex">
         {!activeThread ? (
           <div className="flex flex-1 items-center justify-center text-muted-foreground">
             <div className="text-center">
               <MessageCircle className="mx-auto mb-3 h-12 w-12 opacity-30" />
-              <p className="text-sm">Bir konuşma seçin</p>
+              <p className="text-sm">{t.messages.selectConversation}</p>
             </div>
           </div>
         ) : (
           <>
-            <div className="flex items-center gap-3 border-b border-rose-100 p-4">
+            <div className="flex items-center gap-3 border-b border-border p-4">
               <div
                 className={cn(
                   "flex h-9 w-9 items-center justify-center rounded-full text-white",
@@ -173,10 +179,10 @@ export function MessagesInbox() {
               </div>
               <div>
                 <p className="font-medium">{activeThread.contact_name}</p>
-                <p className="text-xs text-muted-foreground capitalize">
+                <p className="text-xs text-muted-foreground">
                   {activeThread.channel === "instagram"
-                    ? "Instagram Direct"
-                    : "WhatsApp Business"}
+                    ? t.messages.instagramDirect
+                    : t.messages.whatsappBusiness}
                   {activeThread.contact_handle &&
                     ` · ${activeThread.contact_handle}`}
                 </p>
@@ -200,7 +206,7 @@ export function MessagesInbox() {
                         "max-w-[75%] rounded-2xl px-4 py-2.5 text-sm",
                         msg.direction === "outbound"
                           ? "rounded-br-sm bg-gradient-to-r from-rose-500 to-purple-500 text-white"
-                          : "rounded-bl-sm bg-muted"
+                          : "rounded-bl-sm bg-muted text-foreground"
                       )}
                     >
                       {msg.direction === "inbound" && (
@@ -217,7 +223,7 @@ export function MessagesInbox() {
                             : "text-muted-foreground"
                         )}
                       >
-                        {formatTime(msg.created_at)}
+                        {formatTime(msg.created_at, locale)}
                       </p>
                     </div>
                   </div>
@@ -227,12 +233,12 @@ export function MessagesInbox() {
 
             <form
               onSubmit={handleSend}
-              className="flex gap-2 border-t border-rose-100 p-4"
+              className="flex gap-2 border-t border-border p-4"
             >
               <Input
                 value={reply}
                 onChange={(e) => setReply(e.target.value)}
-                placeholder="Mesajınızı yazın..."
+                placeholder={t.messages.placeholder}
                 disabled={isPending}
               />
               <Button

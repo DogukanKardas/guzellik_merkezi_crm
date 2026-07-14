@@ -3,6 +3,7 @@
 import { useState } from "react";
 import { useRouter } from "next/navigation";
 import { createCustomer } from "@/lib/actions";
+import { useSettings } from "@/lib/i18n/settings-context";
 import {
   Dialog,
   DialogContent,
@@ -30,6 +31,7 @@ export function CustomerFormDialog({
   };
 }) {
   const router = useRouter();
+  const { t } = useSettings();
   const [open, setOpen] = useState(false);
   const [loading, setLoading] = useState(false);
 
@@ -56,12 +58,12 @@ export function CustomerFormDialog({
       <DialogContent>
         <DialogHeader>
           <DialogTitle>
-            {customer ? "Müşteri Düzenle" : "Yeni Müşteri"}
+            {customer ? t.customers.editCustomer : t.customers.newCustomer}
           </DialogTitle>
         </DialogHeader>
         <form onSubmit={handleSubmit} className="space-y-4">
           <div className="space-y-2">
-            <Label htmlFor="full_name">Ad Soyad *</Label>
+            <Label htmlFor="full_name">{t.customers.fullName} *</Label>
             <Input
               id="full_name"
               name="full_name"
@@ -71,7 +73,7 @@ export function CustomerFormDialog({
           </div>
           <div className="grid grid-cols-2 gap-4">
             <div className="space-y-2">
-              <Label htmlFor="phone">Telefon</Label>
+              <Label htmlFor="phone">{t.customers.phone}</Label>
               <Input
                 id="phone"
                 name="phone"
@@ -79,7 +81,7 @@ export function CustomerFormDialog({
               />
             </div>
             <div className="space-y-2">
-              <Label htmlFor="email">E-posta</Label>
+              <Label htmlFor="email">{t.customers.email}</Label>
               <Input
                 id="email"
                 name="email"
@@ -89,16 +91,16 @@ export function CustomerFormDialog({
             </div>
           </div>
           <div className="space-y-2">
-            <Label htmlFor="instagram_handle">Instagram</Label>
+            <Label htmlFor="instagram_handle">{t.customers.instagram}</Label>
             <Input
               id="instagram_handle"
               name="instagram_handle"
-              placeholder="@kullanici"
+              placeholder="@user"
               defaultValue={customer?.instagram_handle ?? ""}
             />
           </div>
           <div className="space-y-2">
-            <Label htmlFor="notes">Notlar</Label>
+            <Label htmlFor="notes">{t.common.notes}</Label>
             <Textarea
               id="notes"
               name="notes"
@@ -106,7 +108,7 @@ export function CustomerFormDialog({
             />
           </div>
           <Button type="submit" disabled={loading} className="w-full">
-            {loading ? "Kaydediliyor..." : "Kaydet"}
+            {loading ? t.common.saving : t.common.save}
           </Button>
         </form>
       </DialogContent>

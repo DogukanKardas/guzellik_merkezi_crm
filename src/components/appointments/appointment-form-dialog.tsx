@@ -3,7 +3,9 @@
 import { useState } from "react";
 import { useRouter } from "next/navigation";
 import { createAppointment } from "@/lib/actions";
-import type { Customer, Service } from "@/lib/types";
+import type { Customer, Service, AppointmentStatus } from "@/lib/types";
+import { useSettings } from "@/lib/i18n/settings-context";
+import { formatMinutes } from "@/lib/format";
 import {
   Dialog,
   DialogContent,
@@ -33,11 +35,12 @@ export function AppointmentFormDialog({
   services: Service[];
 }) {
   const router = useRouter();
+  const { locale, t } = useSettings();
   const [open, setOpen] = useState(false);
   const [loading, setLoading] = useState(false);
   const [selectedCustomer, setSelectedCustomer] = useState("");
   const [selectedService, setSelectedService] = useState("");
-  const [status, setStatus] = useState("pending");
+  const [status, setStatus] = useState<AppointmentStatus>("pending");
 
   const service = services.find((s) => s.id === selectedService);
 
@@ -62,14 +65,14 @@ export function AppointmentFormDialog({
       <DialogTrigger asChild>{children}</DialogTrigger>
       <DialogContent className="max-w-md">
         <DialogHeader>
-          <DialogTitle>Yeni Randevu</DialogTitle>
+          <DialogTitle>{t.appointments.newAppointment}</DialogTitle>
         </DialogHeader>
         <form onSubmit={handleSubmit} className="space-y-4">
           <div className="space-y-2">
-            <Label>Müşteri *</Label>
+            <Label>{t.appointments.customer} *</Label>
             <Select value={selectedCustomer} onValueChange={setSelectedCustomer} required>
               <SelectTrigger>
-                <SelectValue placeholder="Müşteri seçin" />
+                <SelectValue placeholder={t.appointments.selectCustomer} />
               </SelectTrigger>
               <SelectContent>
                 {customers.map((c) => (
@@ -81,26 +84,26 @@ export function AppointmentFormDialog({
             </Select>
           </div>
           <div className="space-y-2">
-            <Label>Hizmet *</Label>
+            <Label>{t.appointments.service} *</Label>
             <Select
               value={selectedService}
               onValueChange={setSelectedService}
               required
             >
               <SelectTrigger>
-                <SelectValue placeholder="Hizmet seçin" />
+                <SelectValue placeholder={t.appointments.selectService} />
               </SelectTrigger>
               <SelectContent>
                 {services.map((s) => (
                   <SelectItem key={s.id} value={s.id}>
-                    {s.name} ({s.duration_minutes} dk)
+                    {s.name} ({formatMinutes(s.duration_minutes, locale)})
                   </SelectItem>
                 ))}
               </SelectContent>
             </Select>
           </div>
           <div className="space-y-2">
-            <Label htmlFor="starts_at">Tarih ve Saat *</Label>
+            <Label htmlFor="starts_at">{t.appointments.dateTime} *</Label>
             <Input
               id="starts_at"
               name="starts_at"
@@ -109,29 +112,42 @@ export function AppointmentFormDialog({
             />
           </div>
           <div className="space-y-2">
-            <Label htmlFor="staff_name">Personel</Label>
-            <Input id="staff_name" name="staff_name" defaultValue="Personel" />
+            <Label htmlFor="staff_name">{t.appointments.staff}</Label>
+            <Input
+              id="staff_name"
+              name="staff_name"
+              defaultValue={t.common.staff}
+            />
           </div>
           <div className="space-y-2">
-            <Label>Durum</Label>
-            <Select value={status} onValueChange={setStatus}>
+            <Label>{t.appointments.status}</Label>
+            <Select
+              value={status}
+              onValueChange={(v) => setStatus(v as AppointmentStatus)}
+            >
               <SelectTrigger>
                 <SelectValue />
               </SelectTrigger>
               <SelectContent>
-                <SelectItem value="pending">Bekliyor</SelectItem>
-                <SelectItem value="confirmed">Onaylandı</SelectItem>
-                <SelectItem value="completed">Tamamlandı</SelectItem>
-                <SelectItem value="cancelled">İptal</SelectItem>
+                {(
+                  Object.entries(t.status.appointment) as [
+                    AppointmentStatus,
+                    string,
+                  ][]
+                ).map(([value, label]) => (
+                  <SelectItem key={value} value={value}>
+                    {label}
+                  </SelectItem>
+                ))}
               </SelectContent>
             </Select>
           </div>
           <div className="space-y-2">
-            <Label htmlFor="notes">Notlar</Label>
+            <Label htmlFor="notes">{t.common.notes}</Label>
             <Textarea id="notes" name="notes" />
           </div>
           <Button type="submit" disabled={loading} className="w-full">
-            {loading ? "Kaydediliyor..." : "Randevu Oluştur"}
+            {loading ? t.common.saving : t.appointments.create}
           </Button>
         </form>
       </DialogContent>

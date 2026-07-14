@@ -4,6 +4,7 @@ import { useState } from "react";
 import { useRouter } from "next/navigation";
 import { createService, updateService, deleteService } from "@/lib/actions";
 import type { Service } from "@/lib/types";
+import { useSettings } from "@/lib/i18n/settings-context";
 import {
   Dialog,
   DialogContent,
@@ -39,8 +40,8 @@ function ServiceForm({
   service?: Service;
   onDone: () => void;
 }) {
+  const { t } = useSettings();
   const [loading, setLoading] = useState(false);
-
   const [category, setCategory] = useState(service?.category ?? categories[0]);
   const [isActive, setIsActive] = useState(service?.is_active ?? true);
 
@@ -63,11 +64,11 @@ function ServiceForm({
   return (
     <form onSubmit={handleSubmit} className="space-y-4">
       <div className="space-y-2">
-        <Label htmlFor="name">Hizmet Adı *</Label>
+        <Label htmlFor="name">{t.services.serviceName} *</Label>
         <Input id="name" name="name" defaultValue={service?.name} required />
       </div>
       <div className="space-y-2">
-        <Label>Kategori *</Label>
+        <Label>{t.services.category} *</Label>
         <Select value={category} onValueChange={setCategory} required>
           <SelectTrigger>
             <SelectValue />
@@ -83,7 +84,7 @@ function ServiceForm({
       </div>
       <div className="grid grid-cols-2 gap-4">
         <div className="space-y-2">
-          <Label htmlFor="duration_minutes">Süre (dk) *</Label>
+          <Label htmlFor="duration_minutes">{t.services.durationMin} *</Label>
           <Input
             id="duration_minutes"
             name="duration_minutes"
@@ -95,7 +96,7 @@ function ServiceForm({
           />
         </div>
         <div className="space-y-2">
-          <Label htmlFor="price">Fiyat (₺) *</Label>
+          <Label htmlFor="price">{t.services.priceTry} *</Label>
           <Input
             id="price"
             name="price"
@@ -115,10 +116,10 @@ function ServiceForm({
           onChange={(e) => setIsActive(e.target.checked)}
           className="h-4 w-4 rounded"
         />
-        <Label htmlFor="is_active">Aktif</Label>
+        <Label htmlFor="is_active">{t.common.active}</Label>
       </div>
       <Button type="submit" disabled={loading} className="w-full">
-        {loading ? "Kaydediliyor..." : "Kaydet"}
+        {loading ? t.common.saving : t.common.save}
       </Button>
     </form>
   );
@@ -132,6 +133,7 @@ export function ServiceFormDialog({
   service?: Service;
 }) {
   const router = useRouter();
+  const { t } = useSettings();
   const [open, setOpen] = useState(false);
 
   function handleDone() {
@@ -144,7 +146,9 @@ export function ServiceFormDialog({
       <DialogTrigger asChild>{children}</DialogTrigger>
       <DialogContent>
         <DialogHeader>
-          <DialogTitle>{service ? "Hizmet Düzenle" : "Yeni Hizmet"}</DialogTitle>
+          <DialogTitle>
+            {service ? t.services.editService : t.services.newService}
+          </DialogTitle>
         </DialogHeader>
         <ServiceForm service={service} onDone={handleDone} />
       </DialogContent>
@@ -154,10 +158,11 @@ export function ServiceFormDialog({
 
 export function DeleteServiceButton({ id }: { id: string }) {
   const router = useRouter();
+  const { t } = useSettings();
   const [loading, setLoading] = useState(false);
 
   async function handleDelete() {
-    if (!confirm("Bu hizmeti silmek istediğinize emin misiniz?")) return;
+    if (!confirm(t.common.confirmDelete)) return;
     setLoading(true);
     await deleteService(id);
     setLoading(false);

@@ -15,9 +15,14 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table";
-import { formatCurrency } from "@/lib/format";
+import { formatCurrency, formatMinutes } from "@/lib/format";
+import { getLocale } from "@/lib/i18n/get-locale";
+import { getTranslation } from "@/lib/i18n/translations";
+import { panelClass } from "@/lib/ui-classes";
 
 export default async function ServicesPage() {
+  const locale = await getLocale();
+  const t = getTranslation(locale);
   const services = await getServices();
 
   return (
@@ -28,28 +33,28 @@ export default async function ServicesPage() {
           <ServiceFormDialog>
             <Button className="bg-gradient-to-r from-rose-500 to-purple-500 hover:from-rose-600 hover:to-purple-600">
               <Plus className="mr-2 h-4 w-4" />
-              Yeni Hizmet
+              {t.services.newService}
             </Button>
           </ServiceFormDialog>
         </div>
 
-        <div className="rounded-xl border border-rose-100 bg-white">
+        <div className={panelClass}>
           <Table>
             <TableHeader>
               <TableRow>
-                <TableHead>Hizmet</TableHead>
-                <TableHead>Kategori</TableHead>
-                <TableHead>Süre</TableHead>
-                <TableHead>Fiyat</TableHead>
-                <TableHead>Durum</TableHead>
-                <TableHead className="text-right">İşlem</TableHead>
+                <TableHead>{t.services.name}</TableHead>
+                <TableHead>{t.services.category}</TableHead>
+                <TableHead>{t.services.duration}</TableHead>
+                <TableHead>{t.services.price}</TableHead>
+                <TableHead>{t.services.status}</TableHead>
+                <TableHead className="text-right">{t.services.action}</TableHead>
               </TableRow>
             </TableHeader>
             <TableBody>
               {services.length === 0 ? (
                 <TableRow>
                   <TableCell colSpan={6} className="text-center text-muted-foreground">
-                    Hizmet bulunamadı.
+                    {t.services.notFound}
                   </TableCell>
                 </TableRow>
               ) : (
@@ -57,18 +62,20 @@ export default async function ServicesPage() {
                   <TableRow key={s.id}>
                     <TableCell className="font-medium">{s.name}</TableCell>
                     <TableCell>{s.category}</TableCell>
-                    <TableCell>{s.duration_minutes} dk</TableCell>
-                    <TableCell>{formatCurrency(Number(s.price))}</TableCell>
+                    <TableCell>
+                      {formatMinutes(s.duration_minutes, locale)}
+                    </TableCell>
+                    <TableCell>{formatCurrency(Number(s.price), locale)}</TableCell>
                     <TableCell>
                       <Badge variant={s.is_active ? "default" : "secondary"}>
-                        {s.is_active ? "Aktif" : "Pasif"}
+                        {s.is_active ? t.common.active : t.common.inactive}
                       </Badge>
                     </TableCell>
                     <TableCell className="text-right">
                       <div className="flex justify-end gap-1">
                         <ServiceFormDialog service={s}>
                           <Button variant="ghost" size="sm">
-                            Düzenle
+                            {t.common.edit}
                           </Button>
                         </ServiceFormDialog>
                         <DeleteServiceButton id={s.id} />

@@ -13,15 +13,11 @@ import {
   CardTitle,
 } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
-import {
-  APPOINTMENT_STATUS_LABELS,
-  PAYMENT_METHOD_LABELS,
-  PAYMENT_STATUS_LABELS,
-  type AppointmentStatus,
-  type PaymentMethod,
-  type PaymentStatus,
-} from "@/lib/types";
+import type { AppointmentStatus, PaymentMethod, PaymentStatus } from "@/lib/types";
 import { formatCurrency, formatDate, formatDateTime } from "@/lib/format";
+import { getLocale } from "@/lib/i18n/get-locale";
+import { getTranslation, interpolate } from "@/lib/i18n/translations";
+import { panelItemClass } from "@/lib/ui-classes";
 
 export default async function CustomerDetailPage({
   params,
@@ -29,6 +25,8 @@ export default async function CustomerDetailPage({
   params: Promise<{ id: string }>;
 }) {
   const { id } = await params;
+  const locale = await getLocale();
+  const t = getTranslation(locale);
 
   let data;
   try {
@@ -47,72 +45,82 @@ export default async function CustomerDetailPage({
           <Button variant="ghost" size="sm" asChild>
             <Link href="/musteriler">
               <ArrowLeft className="mr-2 h-4 w-4" />
-              Geri
+              {t.common.back}
             </Link>
           </Button>
           <CustomerFormDialog customer={customer}>
             <Button variant="outline" size="sm">
-              Düzenle
+              {t.common.edit}
             </Button>
           </CustomerFormDialog>
         </div>
 
         <div className="grid gap-4 md:grid-cols-3">
-          <Card className="border-rose-100 md:col-span-1">
+          <Card className="border-border md:col-span-1">
             <CardHeader>
-              <CardTitle className="text-base">İletişim Bilgileri</CardTitle>
+              <CardTitle className="text-base">{t.customers.contactInfo}</CardTitle>
             </CardHeader>
             <CardContent className="space-y-3 text-sm">
               <div>
-                <p className="text-muted-foreground">Telefon</p>
-                <p className="font-medium">{customer.phone ?? "—"}</p>
+                <p className="text-muted-foreground">{t.customers.phone}</p>
+                <p className="font-medium">{customer.phone ?? t.common.empty}</p>
               </div>
               <div>
-                <p className="text-muted-foreground">E-posta</p>
-                <p className="font-medium">{customer.email ?? "—"}</p>
+                <p className="text-muted-foreground">{t.customers.email}</p>
+                <p className="font-medium">{customer.email ?? t.common.empty}</p>
               </div>
               <div>
-                <p className="text-muted-foreground">Instagram</p>
-                <p className="font-medium">{customer.instagram_handle ?? "—"}</p>
+                <p className="text-muted-foreground">{t.customers.instagram}</p>
+                <p className="font-medium">
+                  {customer.instagram_handle ?? t.common.empty}
+                </p>
               </div>
               <div>
-                <p className="text-muted-foreground">Kayıt Tarihi</p>
-                <p className="font-medium">{formatDate(customer.created_at)}</p>
+                <p className="text-muted-foreground">{t.customers.registeredAt}</p>
+                <p className="font-medium">
+                  {formatDate(customer.created_at, locale)}
+                </p>
               </div>
               {customer.notes && (
                 <div>
-                  <p className="text-muted-foreground">Notlar</p>
+                  <p className="text-muted-foreground">{t.common.notes}</p>
                   <p className="font-medium">{customer.notes}</p>
                 </div>
               )}
             </CardContent>
           </Card>
 
-          <Card className="border-rose-100 md:col-span-2">
+          <Card className="border-border md:col-span-2">
             <CardHeader>
               <CardTitle className="flex items-center gap-2 text-base">
                 <Calendar className="h-4 w-4" />
-                Randevu Geçmişi
+                {t.customers.appointmentHistory}
               </CardTitle>
-              <CardDescription>{appointments.length} randevu</CardDescription>
+              <CardDescription>
+                {interpolate(t.customers.appointmentsCount, {
+                  count: appointments.length,
+                })}
+              </CardDescription>
             </CardHeader>
             <CardContent className="space-y-2">
               {appointments.length === 0 ? (
-                <p className="text-sm text-muted-foreground">Randevu yok.</p>
+                <p className="text-sm text-muted-foreground">
+                  {t.customers.noAppointments}
+                </p>
               ) : (
                 appointments.slice(0, 5).map((apt) => (
                   <div
                     key={apt.id}
-                    className="flex items-center justify-between rounded-lg border p-3 text-sm"
+                    className={`flex items-center justify-between text-sm ${panelItemClass}`}
                   >
                     <div>
                       <p className="font-medium">{apt.services?.name}</p>
                       <p className="text-muted-foreground">
-                        {formatDateTime(apt.starts_at)}
+                        {formatDateTime(apt.starts_at, locale)}
                       </p>
                     </div>
                     <Badge variant="secondary">
-                      {APPOINTMENT_STATUS_LABELS[apt.status as AppointmentStatus]}
+                      {t.status.appointment[apt.status as AppointmentStatus]}
                     </Badge>
                   </div>
                 ))
@@ -122,30 +130,34 @@ export default async function CustomerDetailPage({
         </div>
 
         <div className="grid gap-4 md:grid-cols-2">
-          <Card className="border-rose-100">
+          <Card className="border-border">
             <CardHeader>
               <CardTitle className="flex items-center gap-2 text-base">
                 <CreditCard className="h-4 w-4" />
-                Ödemeler
+                {t.customers.payments}
               </CardTitle>
             </CardHeader>
             <CardContent className="space-y-2">
               {payments.length === 0 ? (
-                <p className="text-sm text-muted-foreground">Ödeme yok.</p>
+                <p className="text-sm text-muted-foreground">
+                  {t.customers.noPayments}
+                </p>
               ) : (
                 payments.slice(0, 5).map((p) => (
                   <div
                     key={p.id}
-                    className="flex items-center justify-between rounded-lg border p-3 text-sm"
+                    className={`flex items-center justify-between text-sm ${panelItemClass}`}
                   >
                     <div>
-                      <p className="font-medium">{formatCurrency(Number(p.amount))}</p>
+                      <p className="font-medium">
+                        {formatCurrency(Number(p.amount), locale)}
+                      </p>
                       <p className="text-muted-foreground">
-                        {PAYMENT_METHOD_LABELS[p.method as PaymentMethod]}
+                        {t.status.paymentMethod[p.method as PaymentMethod]}
                       </p>
                     </div>
                     <Badge variant="secondary">
-                      {PAYMENT_STATUS_LABELS[p.status as PaymentStatus]}
+                      {t.status.payment[p.status as PaymentStatus]}
                     </Badge>
                   </div>
                 ))
@@ -153,29 +165,31 @@ export default async function CustomerDetailPage({
             </CardContent>
           </Card>
 
-          <Card className="border-rose-100">
+          <Card className="border-border">
             <CardHeader>
               <CardTitle className="flex items-center gap-2 text-base">
                 <MessageSquare className="h-4 w-4" />
-                Mesaj Konuşmaları
+                {t.customers.messageThreads}
               </CardTitle>
             </CardHeader>
             <CardContent className="space-y-2">
               {threads.length === 0 ? (
-                <p className="text-sm text-muted-foreground">Konuşma yok.</p>
+                <p className="text-sm text-muted-foreground">
+                  {t.customers.noThreads}
+                </p>
               ) : (
-                threads.map((t) => (
+                threads.map((thread) => (
                   <Link
-                    key={t.id}
-                    href={`/mesajlar?thread=${t.id}`}
-                    className="flex items-center justify-between rounded-lg border p-3 text-sm hover:bg-muted/50"
+                    key={thread.id}
+                    href={`/mesajlar?thread=${thread.id}`}
+                    className={`flex items-center justify-between text-sm ${panelItemClass}`}
                   >
                     <div>
-                      <p className="font-medium capitalize">{t.channel}</p>
-                      <p className="text-muted-foreground">{t.contact_handle}</p>
+                      <p className="font-medium capitalize">{thread.channel}</p>
+                      <p className="text-muted-foreground">{thread.contact_handle}</p>
                     </div>
-                    {t.unread_count > 0 && (
-                      <Badge className="bg-rose-500">{t.unread_count}</Badge>
+                    {thread.unread_count > 0 && (
+                      <Badge className="bg-rose-500">{thread.unread_count}</Badge>
                     )}
                   </Link>
                 ))

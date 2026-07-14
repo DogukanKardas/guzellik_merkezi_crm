@@ -3,6 +3,7 @@
 import { useRouter } from "next/navigation";
 import { updatePaymentStatus } from "@/lib/actions";
 import type { PaymentStatus } from "@/lib/types";
+import { useSettings } from "@/lib/i18n/settings-context";
 import {
   Select,
   SelectContent,
@@ -10,7 +11,6 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import { PAYMENT_STATUS_LABELS } from "@/lib/types";
 
 export function PaymentStatusSelect({
   id,
@@ -20,6 +20,7 @@ export function PaymentStatusSelect({
   status: PaymentStatus;
 }) {
   const router = useRouter();
+  const { t } = useSettings();
 
   async function handleChange(value: string) {
     await updatePaymentStatus(id, value as PaymentStatus);
@@ -32,7 +33,9 @@ export function PaymentStatusSelect({
         <SelectValue />
       </SelectTrigger>
       <SelectContent>
-        {Object.entries(PAYMENT_STATUS_LABELS).map(([value, label]) => (
+        {(
+          Object.entries(t.status.payment) as [PaymentStatus, string][]
+        ).map(([value, label]) => (
           <SelectItem key={value} value={value}>
             {label}
           </SelectItem>

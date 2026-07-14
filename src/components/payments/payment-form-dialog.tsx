@@ -3,7 +3,8 @@
 import { useState } from "react";
 import { useRouter } from "next/navigation";
 import { createPayment } from "@/lib/actions";
-import type { Customer } from "@/lib/types";
+import type { Customer, PaymentMethod, PaymentStatus } from "@/lib/types";
+import { useSettings } from "@/lib/i18n/settings-context";
 import {
   Dialog,
   DialogContent,
@@ -31,12 +32,12 @@ export function PaymentFormDialog({
   customers: Customer[];
 }) {
   const router = useRouter();
+  const { t } = useSettings();
   const [open, setOpen] = useState(false);
   const [loading, setLoading] = useState(false);
-
   const [customerId, setCustomerId] = useState("");
-  const [method, setMethod] = useState("cash");
-  const [status, setStatus] = useState("paid");
+  const [method, setMethod] = useState<PaymentMethod>("cash");
+  const [status, setStatus] = useState<PaymentStatus>("paid");
 
   async function handleSubmit(e: React.FormEvent<HTMLFormElement>) {
     e.preventDefault();
@@ -56,14 +57,14 @@ export function PaymentFormDialog({
       <DialogTrigger asChild>{children}</DialogTrigger>
       <DialogContent>
         <DialogHeader>
-          <DialogTitle>Yeni Ödeme</DialogTitle>
+          <DialogTitle>{t.payments.newPayment}</DialogTitle>
         </DialogHeader>
         <form onSubmit={handleSubmit} className="space-y-4">
           <div className="space-y-2">
-            <Label>Müşteri *</Label>
+            <Label>{t.payments.customer} *</Label>
             <Select value={customerId} onValueChange={setCustomerId} required>
               <SelectTrigger>
-                <SelectValue placeholder="Müşteri seçin" />
+                <SelectValue placeholder={t.payments.selectCustomer} />
               </SelectTrigger>
               <SelectContent>
                 {customers.map((c) => (
@@ -75,42 +76,62 @@ export function PaymentFormDialog({
             </Select>
           </div>
           <div className="space-y-2">
-            <Label htmlFor="amount">Tutar (₺) *</Label>
-            <Input id="amount" name="amount" type="number" min="0" step="0.01" required />
+            <Label htmlFor="amount">{t.payments.amountLabel} *</Label>
+            <Input
+              id="amount"
+              name="amount"
+              type="number"
+              min="0"
+              step="0.01"
+              required
+            />
           </div>
           <div className="grid grid-cols-2 gap-4">
             <div className="space-y-2">
-              <Label>Ödeme Yöntemi</Label>
-              <Select value={method} onValueChange={setMethod}>
+              <Label>{t.payments.method}</Label>
+              <Select
+                value={method}
+                onValueChange={(v) => setMethod(v as PaymentMethod)}
+              >
                 <SelectTrigger>
                   <SelectValue />
                 </SelectTrigger>
                 <SelectContent>
-                  <SelectItem value="cash">Nakit</SelectItem>
-                  <SelectItem value="card">Kart</SelectItem>
-                  <SelectItem value="transfer">Havale</SelectItem>
+                  {(
+                    Object.entries(t.status.paymentMethod) as [
+                      PaymentMethod,
+                      string,
+                    ][]
+                  ).map(([value, label]) => (
+                    <SelectItem key={value} value={value}>
+                      {label}
+                    </SelectItem>
+                  ))}
                 </SelectContent>
               </Select>
             </div>
             <div className="space-y-2">
-              <Label>Durum</Label>
-              <Select value={status} onValueChange={setStatus}>
+              <Label>{t.payments.status}</Label>
+              <Select
+                value={status}
+                onValueChange={(v) => setStatus(v as PaymentStatus)}
+              >
                 <SelectTrigger>
                   <SelectValue />
                 </SelectTrigger>
                 <SelectContent>
-                  <SelectItem value="paid">Ödendi</SelectItem>
-                  <SelectItem value="pending">Bekliyor</SelectItem>
+                  <SelectItem value="paid">{t.payments.paid}</SelectItem>
+                  <SelectItem value="pending">{t.payments.pending}</SelectItem>
                 </SelectContent>
               </Select>
             </div>
           </div>
           <div className="space-y-2">
-            <Label htmlFor="notes">Notlar</Label>
+            <Label htmlFor="notes">{t.common.notes}</Label>
             <Textarea id="notes" name="notes" />
           </div>
           <Button type="submit" disabled={loading} className="w-full">
-            {loading ? "Kaydediliyor..." : "Ödeme Kaydet"}
+            {loading ? t.common.saving : t.payments.save}
           </Button>
         </form>
       </DialogContent>

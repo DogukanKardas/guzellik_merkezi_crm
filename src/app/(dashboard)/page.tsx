@@ -1,13 +1,17 @@
 import { PageHeader } from "@/components/layout/page-header";
 import { getDashboardStats } from "@/lib/actions";
 import { formatCurrency, formatDateTime } from "@/lib/format";
-import { APPOINTMENT_STATUS_LABELS, type AppointmentStatus } from "@/lib/types";
+import { getLocale } from "@/lib/i18n/get-locale";
+import { getTranslation } from "@/lib/i18n/translations";
+import { panelItemClass } from "@/lib/ui-classes";
 import { StatCard } from "@/components/dashboard/stat-card";
 import {
   Calendar,
   CreditCard,
   MessageSquare,
   TrendingUp,
+  AtSign,
+  MessageCircle,
 } from "lucide-react";
 import {
   Card,
@@ -18,9 +22,11 @@ import {
 } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import Link from "next/link";
-import { AtSign, MessageCircle } from "lucide-react";
+import type { AppointmentStatus } from "@/lib/types";
 
 export default async function DashboardPage() {
+  const locale = await getLocale();
+  const t = getTranslation(locale);
   const stats = await getDashboardStats();
 
   return (
@@ -29,47 +35,49 @@ export default async function DashboardPage() {
       <main className="flex-1 space-y-6 p-4 lg:p-8">
         <div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-4">
           <StatCard
-            title="Bugünkü Randevular"
+            title={t.dashboard.todayAppointments}
             value={stats.todayAppointments}
             icon={Calendar}
             color="rose"
           />
           <StatCard
-            title="Bekleyen Ödemeler"
+            title={t.dashboard.pendingPayments}
             value={stats.pendingPayments}
             icon={CreditCard}
             color="amber"
           />
           <StatCard
-            title="Okunmamış Mesajlar"
+            title={t.dashboard.unreadMessages}
             value={stats.unreadMessages}
             icon={MessageSquare}
             color="purple"
           />
           <StatCard
-            title="Aylık Gelir"
-            value={formatCurrency(stats.monthlyRevenue)}
+            title={t.dashboard.monthlyRevenue}
+            value={formatCurrency(stats.monthlyRevenue, locale)}
             icon={TrendingUp}
             color="emerald"
           />
         </div>
 
         <div className="grid gap-6 lg:grid-cols-2">
-          <Card className="border-rose-100">
+          <Card className="border-border">
             <CardHeader>
-              <CardTitle className="text-base">Yaklaşan Randevular</CardTitle>
-              <CardDescription>En yakın 5 randevu</CardDescription>
+              <CardTitle className="text-base">
+                {t.dashboard.upcomingAppointments}
+              </CardTitle>
+              <CardDescription>{t.dashboard.upcomingDesc}</CardDescription>
             </CardHeader>
             <CardContent className="space-y-3">
               {stats.upcomingAppointments.length === 0 ? (
                 <p className="text-sm text-muted-foreground">
-                  Yaklaşan randevu bulunmuyor.
+                  {t.dashboard.noUpcoming}
                 </p>
               ) : (
                 stats.upcomingAppointments.map((apt) => (
                   <div
                     key={apt.id}
-                    className="flex items-center justify-between rounded-lg border border-rose-50 bg-rose-50/30 p-3"
+                    className={`flex items-center justify-between ${panelItemClass}`}
                   >
                     <div>
                       <p className="text-sm font-medium">
@@ -81,10 +89,14 @@ export default async function DashboardPage() {
                     </div>
                     <div className="text-right">
                       <p className="text-xs font-medium">
-                        {formatDateTime(apt.starts_at)}
+                        {formatDateTime(apt.starts_at, locale)}
                       </p>
                       <Badge variant="secondary" className="mt-1 text-xs">
-                        {APPOINTMENT_STATUS_LABELS[apt.status as AppointmentStatus]}
+                        {
+                          t.status.appointment[
+                            apt.status as AppointmentStatus
+                          ]
+                        }
                       </Badge>
                     </div>
                   </div>
@@ -92,29 +104,31 @@ export default async function DashboardPage() {
               )}
               <Link
                 href="/randevular"
-                className="block text-center text-sm text-rose-600 hover:underline"
+                className="block text-center text-sm text-rose-600 hover:underline dark:text-rose-400"
               >
-                Tüm randevular →
+                {t.dashboard.viewAllAppointments}
               </Link>
             </CardContent>
           </Card>
 
-          <Card className="border-rose-100">
+          <Card className="border-border">
             <CardHeader>
-              <CardTitle className="text-base">Son Mesajlar</CardTitle>
-              <CardDescription>Okunmamış konuşmalar</CardDescription>
+              <CardTitle className="text-base">
+                {t.dashboard.recentMessages}
+              </CardTitle>
+              <CardDescription>{t.dashboard.recentMessagesDesc}</CardDescription>
             </CardHeader>
             <CardContent className="space-y-3">
               {stats.recentThreads.length === 0 ? (
                 <p className="text-sm text-muted-foreground">
-                  Okunmamış mesaj yok.
+                  {t.dashboard.noUnread}
                 </p>
               ) : (
                 stats.recentThreads.map((thread) => (
                   <Link
                     key={thread.id}
                     href={`/mesajlar?thread=${thread.id}`}
-                    className="flex items-center gap-3 rounded-lg border border-purple-50 bg-purple-50/30 p-3 transition-colors hover:bg-purple-50/60"
+                    className={`flex items-center gap-3 ${panelItemClass}`}
                   >
                     <div
                       className={`flex h-9 w-9 items-center justify-center rounded-full ${
@@ -129,11 +143,11 @@ export default async function DashboardPage() {
                         <MessageCircle className="h-4 w-4" />
                       )}
                     </div>
-                    <div className="flex-1 min-w-0">
-                      <p className="text-sm font-medium truncate">
+                    <div className="min-w-0 flex-1">
+                      <p className="truncate text-sm font-medium">
                         {thread.contact_name}
                       </p>
-                      <p className="text-xs text-muted-foreground truncate">
+                      <p className="truncate text-xs text-muted-foreground">
                         {thread.contact_handle}
                       </p>
                     </div>
@@ -143,9 +157,9 @@ export default async function DashboardPage() {
               )}
               <Link
                 href="/mesajlar"
-                className="block text-center text-sm text-purple-600 hover:underline"
+                className="block text-center text-sm text-purple-600 hover:underline dark:text-purple-400"
               >
-                Mesaj kutusuna git →
+                {t.dashboard.viewInbox}
               </Link>
             </CardContent>
           </Card>
