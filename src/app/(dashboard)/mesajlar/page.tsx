@@ -1,11 +1,11 @@
 import { Suspense } from "react";
-import { Header } from "@/components/layout/sidebar";
+import { PageHeader } from "@/components/layout/page-header";
 import { MessagesInbox } from "@/components/messages/messages-inbox";
 
 export default function MessagesPage() {
   return (
     <>
-      <Header title="Mesajlar" />
+      <PageHeader />
       <main className="flex-1 p-4 lg:p-8">
         <Suspense
           fallback={

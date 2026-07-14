@@ -1,4 +1,4 @@
-import { Header } from "@/components/layout/sidebar";
+import { PageHeader } from "@/components/layout/page-header";
 import { getDashboardStats } from "@/lib/actions";
 import { formatCurrency, formatDateTime } from "@/lib/format";
 import { APPOINTMENT_STATUS_LABELS, type AppointmentStatus } from "@/lib/types";
@@ -25,7 +25,7 @@ export default async function DashboardPage() {
 
   return (
     <>
-      <Header title="Dashboard" />
+      <PageHeader />
       <main className="flex-1 space-y-6 p-4 lg:p-8">
         <div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-4">
           <StatCard

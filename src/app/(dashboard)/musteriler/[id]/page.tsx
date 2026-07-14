@@ -1,7 +1,7 @@
 import Link from "next/link";
 import { notFound } from "next/navigation";
 import { ArrowLeft, Calendar, CreditCard, MessageSquare } from "lucide-react";
-import { Header } from "@/components/layout/sidebar";
+import { PageHeader } from "@/components/layout/page-header";
 import { getCustomerDetails } from "@/lib/actions";
 import { CustomerFormDialog } from "@/components/customers/customer-form-dialog";
 import { Button } from "@/components/ui/button";
@@ -41,7 +41,7 @@ export default async function CustomerDetailPage({
 
   return (
     <>
-      <Header title={customer.full_name} />
+      <PageHeader title={customer.full_name} />
       <main className="flex-1 space-y-6 p-4 lg:p-8">
         <div className="flex items-center gap-3">
           <Button variant="ghost" size="sm" asChild>

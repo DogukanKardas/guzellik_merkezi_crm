@@ -1,5 +1,5 @@
 import { Plus } from "lucide-react";
-import { Header } from "@/components/layout/sidebar";
+import { PageHeader } from "@/components/layout/page-header";
 import {
   getAppointments,
   getCustomers,
@@ -83,7 +83,7 @@ export default async function AppointmentsPage() {
 
   return (
     <>
-      <Header title="Randevular" />
+      <PageHeader />
       <main className="flex-1 space-y-4 p-4 lg:p-8">
         <div className="flex items-center justify-between">
           <div className="flex gap-2">

@@ -10,25 +10,29 @@ import {
   Menu,
   MessageSquare,
   Scissors,
+  Settings,
   Sparkles,
   Users,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
+import { useSettings } from "@/lib/i18n/settings-context";
 import { Button } from "@/components/ui/button";
 import { Sheet, SheetContent, SheetTrigger } from "@/components/ui/sheet";
 import { Separator } from "@/components/ui/separator";
 
-const navItems = [
-  { href: "/", label: "Dashboard", icon: LayoutDashboard },
-  { href: "/musteriler", label: "Müşteriler", icon: Users },
-  { href: "/randevular", label: "Randevular", icon: Calendar },
-  { href: "/odemeler", label: "Ödemeler", icon: CreditCard },
-  { href: "/mesajlar", label: "Mesajlar", icon: MessageSquare },
-  { href: "/hizmetler", label: "Hizmetler", icon: Scissors },
-];
-
 function NavLinks({ onNavigate }: { onNavigate?: () => void }) {
   const pathname = usePathname();
+  const { t } = useSettings();
+
+  const navItems = [
+    { href: "/", label: t.nav.dashboard, icon: LayoutDashboard },
+    { href: "/musteriler", label: t.nav.customers, icon: Users },
+    { href: "/randevular", label: t.nav.appointments, icon: Calendar },
+    { href: "/odemeler", label: t.nav.payments, icon: CreditCard },
+    { href: "/mesajlar", label: t.nav.messages, icon: MessageSquare },
+    { href: "/hizmetler", label: t.nav.services, icon: Scissors },
+    { href: "/ayarlar", label: t.nav.settings, icon: Settings },
+  ];
 
   return (
     <nav className="flex flex-col gap-1">
@@ -42,7 +46,7 @@ function NavLinks({ onNavigate }: { onNavigate?: () => void }) {
             className={cn(
               "flex items-center gap-3 rounded-lg px-3 py-2.5 text-sm font-medium transition-colors",
               active
-                ? "bg-gradient-to-r from-rose-500/10 to-purple-500/10 text-rose-700"
+                ? "bg-gradient-to-r from-rose-500/10 to-purple-500/10 text-rose-700 dark:text-rose-300"
                 : "text-muted-foreground hover:bg-muted hover:text-foreground"
             )}
           >
@@ -55,8 +59,25 @@ function NavLinks({ onNavigate }: { onNavigate?: () => void }) {
   );
 }
 
-export function Sidebar() {
+function SidebarBrand() {
+  const { t } = useSettings();
+
+  return (
+    <div className="flex h-16 items-center gap-2 border-b border-border px-6">
+      <div className="flex h-9 w-9 items-center justify-center rounded-xl bg-gradient-to-br from-rose-400 to-purple-500 text-white">
+        <Sparkles className="h-4 w-4" />
+      </div>
+      <div>
+        <p className="text-sm font-bold text-foreground">{t.app.name}</p>
+        <p className="text-xs text-muted-foreground">{t.app.subtitle}</p>
+      </div>
+    </div>
+  );
+}
+
+function LogoutButton({ className }: { className?: string }) {
   const router = useRouter();
+  const { t } = useSettings();
 
   async function handleLogout() {
     await fetch("/api/auth/logout", { method: "POST" });
@@ -65,42 +86,32 @@ export function Sidebar() {
   }
 
   return (
-    <aside className="hidden w-64 flex-col border-r border-rose-100 bg-white lg:flex">
-      <div className="flex h-16 items-center gap-2 border-b border-rose-100 px-6">
-        <div className="flex h-9 w-9 items-center justify-center rounded-xl bg-gradient-to-br from-rose-400 to-purple-500 text-white">
-          <Sparkles className="h-4 w-4" />
-        </div>
-        <div>
-          <p className="text-sm font-bold text-rose-950">Güzellik Merkezi</p>
-          <p className="text-xs text-muted-foreground">Müşteri Takip</p>
-        </div>
-      </div>
+    <Button
+      variant="ghost"
+      className={cn("w-full justify-start gap-2 text-muted-foreground", className)}
+      onClick={handleLogout}
+    >
+      <LogOut className="h-4 w-4" />
+      {t.nav.logout}
+    </Button>
+  );
+}
+
+export function Sidebar() {
+  return (
+    <aside className="hidden w-64 flex-col border-r border-border bg-background lg:flex">
+      <SidebarBrand />
       <div className="flex-1 p-4">
         <NavLinks />
       </div>
-      <div className="border-t border-rose-100 p-4">
-        <Button
-          variant="ghost"
-          className="w-full justify-start gap-2 text-muted-foreground"
-          onClick={handleLogout}
-        >
-          <LogOut className="h-4 w-4" />
-          Çıkış Yap
-        </Button>
+      <div className="border-t border-border p-4">
+        <LogoutButton />
       </div>
     </aside>
   );
 }
 
 export function MobileNav() {
-  const router = useRouter();
-
-  async function handleLogout() {
-    await fetch("/api/auth/logout", { method: "POST" });
-    router.push("/login");
-    router.refresh();
-  }
-
   return (
     <Sheet>
       <SheetTrigger asChild>
@@ -109,25 +120,13 @@ export function MobileNav() {
         </Button>
       </SheetTrigger>
       <SheetContent side="left" className="w-64 p-0">
-        <div className="flex h-16 items-center gap-2 border-b px-6">
-          <div className="flex h-9 w-9 items-center justify-center rounded-xl bg-gradient-to-br from-rose-400 to-purple-500 text-white">
-            <Sparkles className="h-4 w-4" />
-          </div>
-          <p className="text-sm font-bold">Güzellik Merkezi</p>
-        </div>
+        <SidebarBrand />
         <div className="p-4">
           <NavLinks />
         </div>
         <Separator />
         <div className="p-4">
-          <Button
-            variant="ghost"
-            className="w-full justify-start gap-2"
-            onClick={handleLogout}
-          >
-            <LogOut className="h-4 w-4" />
-            Çıkış Yap
-          </Button>
+          <LogoutButton />
         </div>
       </SheetContent>
     </Sheet>
@@ -135,15 +134,19 @@ export function MobileNav() {
 }
 
 export function Header({ title }: { title: string }) {
+  const { t } = useSettings();
+
   return (
-    <header className="flex h-16 items-center justify-between border-b border-rose-100 bg-white/80 px-4 backdrop-blur-sm lg:px-8">
+    <header className="flex h-16 items-center justify-between border-b border-border bg-background/80 px-4 backdrop-blur-sm lg:px-8">
       <div className="flex items-center gap-3">
         <MobileNav />
-        <h1 className="text-lg font-semibold text-rose-950 lg:text-xl">{title}</h1>
+        <h1 className="text-lg font-semibold text-foreground lg:text-xl">
+          {title}
+        </h1>
       </div>
-      <div className="hidden items-center gap-2 rounded-full bg-rose-50 px-3 py-1.5 text-xs text-rose-600 sm:flex">
+      <div className="hidden items-center gap-2 rounded-full bg-rose-50 px-3 py-1.5 text-xs text-rose-600 dark:bg-rose-950/50 dark:text-rose-300 sm:flex">
         <span className="h-2 w-2 rounded-full bg-emerald-400" />
-        Demo Modu
+        {t.app.demoMode}
       </div>
     </header>
   );

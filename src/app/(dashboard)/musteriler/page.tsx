@@ -1,7 +1,7 @@
 import { Suspense } from "react";
 import Link from "next/link";
 import { Plus, Search } from "lucide-react";
-import { Header } from "@/components/layout/sidebar";
+import { PageHeader } from "@/components/layout/page-header";
 import { getCustomers } from "@/lib/actions";
 import { CustomerFormDialog } from "@/components/customers/customer-form-dialog";
 import { Input } from "@/components/ui/input";
@@ -70,7 +70,7 @@ export default async function CustomersPage({
 
   return (
     <>
-      <Header title="Müşteriler" />
+      <PageHeader />
       <main className="flex-1 space-y-4 p-4 lg:p-8">
         <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
           <form method="get" className="relative max-w-sm flex-1">

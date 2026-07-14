@@ -1,5 +1,5 @@
 import { Plus } from "lucide-react";
-import { Header } from "@/components/layout/sidebar";
+import { PageHeader } from "@/components/layout/page-header";
 import { getServices } from "@/lib/actions";
 import {
   ServiceFormDialog,
@@ -22,7 +22,7 @@ export default async function ServicesPage() {
 
   return (
     <>
-      <Header title="Hizmetler" />
+      <PageHeader />
       <main className="flex-1 space-y-4 p-4 lg:p-8">
         <div className="flex justify-end">
           <ServiceFormDialog>

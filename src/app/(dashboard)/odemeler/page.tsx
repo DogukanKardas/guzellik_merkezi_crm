@@ -1,5 +1,5 @@
 import { Plus } from "lucide-react";
-import { Header } from "@/components/layout/sidebar";
+import { PageHeader } from "@/components/layout/page-header";
 import { getPayments, getCustomers } from "@/lib/actions";
 import { PaymentFormDialog } from "@/components/payments/payment-form-dialog";
 import { PaymentStatusSelect } from "@/components/payments/payment-status-select";
@@ -78,7 +78,7 @@ export default async function PaymentsPage() {
 
   return (
     <>
-      <Header title="Ödemeler" />
+      <PageHeader />
       <main className="flex-1 space-y-4 p-4 lg:p-8">
         <div className="grid gap-4 sm:grid-cols-2">
           <Card className="border-emerald-100 bg-emerald-50/50">
